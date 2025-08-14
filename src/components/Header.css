@@ -1,0 +1,11 @@
+.Header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.Header h1 {
+  font-size: 20px;
+  color: #1f93ff;
+}
