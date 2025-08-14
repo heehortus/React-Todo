@@ -1,0 +1,21 @@
+.TodoList .SearchBar {
+  margin-bottom: 20px;
+  width: 100%;
+  /* 기본 스타일 제거 */
+  border: none;
+  border-bottom: 1px solid rgb(220, 220, 220);
+  box-sizing: border-box;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.TodoList .SearchBar:focus {
+  outline: none;
+  border-bottom: 1px solid #1f93ff;
+}
+
+.TodoList .list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
