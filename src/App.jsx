@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useReducer, useState, useRef, useEffect } from "react";
 import styles from "./App.module.css";
 import Header from "./components/Header";
 import TodoEditor from "./components/TodoEditor";
@@ -6,26 +6,50 @@ import TodoList from "./components/TodoList";
 import Toast from "./components/Toast";
 
 // mock 데이터
-// const mockTodo = [
-//   {
-//     id: 0,
-//     isDone: false,
-//     content: "React 공부하기",
-//     createdDate: new Date().getTime(),
-//   },
-//   {
-//     id: 1,
-//     isDone: false,
-//     content: "TIL 작성하기",
-//     createdDate: new Date().getTime(),
-//   },
-//   {
-//     id: 2,
-//     isDone: false,
-//     content: "React 복습하기",
-//     createdDate: new Date().getTime(),
-//   },
-// ];
+const mockTodo = [
+  {
+    id: 0,
+    isDone: false,
+    content: "React 공부하기",
+    createdDate: new Date().getTime(),
+  },
+  {
+    id: 1,
+    isDone: false,
+    content: "TIL 작성하기",
+    createdDate: new Date().getTime(),
+  },
+  {
+    id: 2,
+    isDone: false,
+    content: "React 복습하기",
+    createdDate: new Date().getTime(),
+  },
+];
+
+// useReducer를 사용하기 위한 reducer 함수
+function reducer(state, action) {
+  switch (action.type) {
+    case "CREATE":
+      return [action.newItem, ...state];
+
+    case "UPDATE":
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, isDone: !it.isDone } : it
+      );
+
+    case "EDIT":
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, content: action.newContent } : it
+      );
+
+    case "DELETE":
+      return state.filter((it) => it.id !== action.targetId);
+
+    default:
+      return state;
+  }
+}
 
 function App() {
   // 컴포넌트 변수 idRef
@@ -36,23 +60,41 @@ function App() {
   // Toast 표시 상태
   const [showToast, setShowToast] = useState(false);
 
-  // 로컬 스토리지에서 데이터 불러오기
-  const [todo, setTodo] = useState(() => {
+  // useReducer로 변경
+  const [todo, dispatch] = useReducer(reducer, null, () => {
     const savedTodos = localStorage.getItem("todos");
-    return savedTodos ? JSON.parse(savedTodos) : [];
+    return savedTodos ? JSON.parse(savedTodos) : mockTodo;
   });
 
-  // 로컬 스토리지에서 마지막 ID 불러오기
+  // 로컬 스토리지에서 데이터 불러오기
+  // const [todo, setTodo] = useState(() => {
+  //   const savedTodos = localStorage.getItem("todos");
+  //   return savedTodos ? JSON.parse(savedTodos) : [];
+  // });
+
+  // // 로컬 스토리지에서 마지막 ID 불러오기
+  // const idRef = useRef(
+  //   (() => {
+  //     const savedTodos = localStorage.getItem("todos");
+  //     if (savedTodos) {
+  //       const todos = JSON.parse(savedTodos);
+  //       return todos.length > 0
+  //         ? Math.max(...todos.map((todo) => todo.id)) + 1
+  //         : 0;
+  //     }
+  //     return 1;
+  //   })()
+  // );
+
+  // localStorage 읽어서 나온 데이터의 최대 ID + 1
   const idRef = useRef(
     (() => {
       const savedTodos = localStorage.getItem("todos");
-      if (savedTodos) {
-        const todos = JSON.parse(savedTodos);
-        return todos.length > 0
-          ? Math.max(...todos.map((todo) => todo.id)) + 1
-          : 0;
-      }
-      return 1;
+      const currentTodos = savedTodos ? JSON.parse(savedTodos) : mockTodo;
+
+      return currentTodos.length > 0
+        ? Math.max(...currentTodos.map((it) => it.id)) + 1
+        : 0;
     })()
   );
 
@@ -63,17 +105,19 @@ function App() {
 
   // 아이템 추가 함수
   const onCreate = (content) => {
-    const newItem = {
-      id: idRef.current,
-      content,
-      isDone: false,
-      createdDate: new Date().getTime(),
-    };
+    dispatch({
+      type: "CREATE",
+      newItem: {
+        id: idRef.current,
+        content,
+        isDone: false,
+        createdDate: new Date().getTime(),
+      },
+    });
 
-    setTodo([newItem, ...todo]);
     idRef.current += 1;
 
-    // toast 알림 로직: 초 후 사라진다.
+    // toast 알림 로직: 2초 후 사라진다.
     setShowToast(true);
     setTimeout(() => {
       setShowToast(false);
@@ -82,26 +126,28 @@ function App() {
 
   // 아이템 업데이트 함수 (체크박스 체크)
   const onUpdate = (targetId) => {
-    setTodo(
-      todo.map((it) =>
-        it.id === targetId ? { ...it, isDone: !it.isDone } : it
-      )
-    );
+    dispatch({
+      type: "UPDATE",
+      targetId,
+    });
   };
 
   // 아이템 수정 함수
   const onEdit = (targetId, newContent) => {
-    setTodo(
-      todo.map((it) =>
-        it.id === targetId ? { ...it, content: newContent } : it
-      )
-    );
+    dispatch({
+      type: "EDIT",
+      targetId,
+      newContent,
+    });
   };
 
   // 아이템 삭제 함수
   // 해당 id를 가진 아이템 요소를 뺀 새 배열로 todo를 업데이트(필터)한다.
   const onDelete = (targetId) => {
-    setTodo(todo.filter((it) => it.id !== targetId));
+    dispatch({
+      type: "DELETE",
+      targetId,
+    });
   };
 
   return (
