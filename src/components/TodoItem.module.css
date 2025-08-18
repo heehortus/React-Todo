@@ -1,0 +1,90 @@
+.todoItem {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgb(240, 240, 240);
+}
+
+.checkbox input {
+  width: 20px;
+  height: 20px;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox input:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.checkbox input:checked::after {
+  content: "✓";
+  transform: scaleY(0.8);
+  color: white;
+  font-size: 20px;
+  font-weight: 500; /* 얇은 체크마크 */
+  line-height: 1;
+}
+
+.title {
+  flex: 1;
+}
+
+.title input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  font-size: 16px;
+  outline: none;
+  background-color: transparent;
+}
+
+.date {
+  font-size: 16px;
+  color: gray;
+}
+
+.btn {
+  display: flex;
+  gap: 4px;
+}
+
+.editBtn {
+  cursor: pointer;
+  color: gray;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editBtn.editing {
+  background-color: #1f93ff;
+  color: #fff;
+}
+
+.deleteBtn {
+  cursor: pointer;
+  color: gray;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

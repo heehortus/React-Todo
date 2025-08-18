@@ -1,4 +1,4 @@
-import "./Header.css";
+import styles from "./Header.module.css";
 
 function KoreanDate() {
   const koreanDateString = new Date().toLocaleDateString("ko-KR", {
@@ -13,7 +13,7 @@ function KoreanDate() {
 
 const Header = () => {
   return (
-    <div className="Header">
+    <div className={styles.Header}>
       <h3>오늘의 날짜는</h3>
       <h1>{KoreanDate()}</h1>
     </div>

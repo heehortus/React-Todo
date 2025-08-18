@@ -1,4 +1,4 @@
-.TodoList .SearchBar {
+.searchBar {
   margin-bottom: 20px;
   width: 100%;
   /* 기본 스타일 제거 */
@@ -9,12 +9,12 @@
   padding-bottom: 15px;
 }
 
-.TodoList .SearchBar:focus {
+.searchBar:focus {
   outline: none;
   border-bottom: 1px solid #1f93ff;
 }
 
-.TodoList .list-wrapper {
+.listWrapper {
   display: flex;
   flex-direction: column;
   gap: 20px;

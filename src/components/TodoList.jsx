@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TodoItem from "./TodoItem";
-import "./TodoList.css";
+import styles from "./TodoList.module.css";
 
-const TodoList = ({ todo, onUpdate, onDelete }) => {
+const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
   const [search, setSearch] = useState("");
 
   // 검색어 입력 내용 처리 함수
@@ -23,21 +23,24 @@ const TodoList = ({ todo, onUpdate, onDelete }) => {
   };
 
   return (
-    <div className="TodoList">
+    <div className={styles.TodoList}>
       <h4>To Do List</h4>
       <input
+        id="searchInput"
+        name="search"
         value={search}
         onChange={onChangeSearch}
-        className="SearchBar"
-        placeholder="검색어를 입력하세요."
+        className={styles.searchBar}
+        placeholder="무엇을 찾고 계신가요?"
       />
-      <div className="list-wrapper">
+      <div className={styles.listWrapper}>
         {getSearchResult().map((it) => {
           return (
             <TodoItem
               key={it.id}
               {...it}
               onUpdate={onUpdate}
+              onEdit={onEdit}
               onDelete={onDelete}
             />
           );
