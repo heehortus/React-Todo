@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import TodoItem from "./TodoItem";
+import { Filter } from "lucide-react";
 import styles from "./TodoList.module.css";
 
 const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
   const [search, setSearch] = useState("");
+
+  // 정렬 및 필터
+  const [sort, setSort] = useState("date"); // 정렬 기준
+  const [showFilter, setShowFilter] = useState(false);
 
   // 검색어 입력 내용 처리 함수
   const onChangeSearch = (e) => {
@@ -17,28 +22,121 @@ const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
   const getSearchResult = () => {
     return search === ""
       ? todo
-      : todo.filter((it) =>
-          it.content.toLowerCase().includes(search.toLowerCase())
+      : todo.filter(
+          (it) =>
+            it.title.toLowerCase().includes(search.toLowerCase()) ||
+            it.content.toLowerCase().includes(search.toLowerCase())
         );
+  };
+
+  // 정렬 기준 변경할 경우 화면에 반영하는 함수
+  const onChangeSort = (value) => {
+    setSort(value);
+    setShowFilter(false);
+  };
+
+  // 정렬 함수
+  const getSortedResult = () => {
+    const searchedTodos = getSearchResult();
+
+    switch (sort) {
+      case "date":
+        // 최신순
+        return searchedTodos.sort((a, b) => b.createdDate - a.createdDate);
+
+      case "title":
+        // 제목 가나다순
+        return searchedTodos.sort((a, b) => a.title.localeCompare(b.title));
+
+      case "completed":
+        // 완료된 것 먼저
+        return searchedTodos.sort((a, b) => b.isDone - a.isDone);
+
+      case "incomplete":
+        // 미완료된 것 먼저
+        return searchedTodos.sort((a, b) => a.isDone - b.isDone);
+
+      default:
+        return searchedTodos;
+    }
+  };
+
+  const getSortLabel = () => {
+    switch (sort) {
+      case "date":
+        return "최신순";
+      case "title":
+        return "가나다순";
+      case "completed":
+        return "완료순";
+      case "incomplete":
+        return "미완료순";
+      default:
+        return "최신순";
+    }
   };
 
   return (
     <div className={styles.TodoList}>
-      <h4>To Do List</h4>
-      <input
-        id="searchInput"
-        name="search"
-        value={search}
-        onChange={onChangeSearch}
-        className={styles.searchBar}
-        placeholder="무엇을 찾고 계신가요?"
-      />
+      <div className={styles.header}>
+        <h3>To Do List</h3>
+
+        <input
+          id="searchInput"
+          name="search"
+          value={search}
+          onChange={onChangeSearch}
+          className={styles.searchBar}
+          placeholder="무엇을 찾고 계신가요?"
+        />
+
+        <div className={styles.filterWrapper}>
+          <button
+            className={styles.filterButton}
+            onClick={() => setShowFilter(!showFilter)}
+          >
+            <Filter size={16} />
+            {getSortLabel()}
+          </button>
+
+          {showFilter && (
+            <div className={styles.filterDropdown}>
+              <button
+                onClick={() => onChangeSort("date")}
+                className={sort === "date" ? styles.active : ""}
+              >
+                최신순
+              </button>
+              <button
+                onClick={() => onChangeSort("title")}
+                className={sort === "title" ? styles.active : ""}
+              >
+                가나다순
+              </button>
+              <button
+                onClick={() => onChangeSort("incomplete")}
+                className={sort === "incomplete" ? styles.active : ""}
+              >
+                미완료순
+              </button>
+              <button
+                onClick={() => onChangeSort("completed")}
+                className={sort === "completed" ? styles.active : ""}
+              >
+                완료순
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className={styles.listWrapper}>
-        {getSearchResult().map((it) => {
+        {getSortedResult().map((it) => {
           return (
             <TodoItem
               key={it.id}
               {...it}
+              title={it.title}
               onUpdate={onUpdate}
               onEdit={onEdit}
               onDelete={onDelete}

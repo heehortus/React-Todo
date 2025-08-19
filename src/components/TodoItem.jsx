@@ -5,6 +5,7 @@ import styles from "./TodoItem.module.css";
 
 const TodoItem = ({
   id,
+  title,
   content,
   isDone,
   createdDate,
@@ -13,6 +14,7 @@ const TodoItem = ({
   onDelete,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(title);
   const [editContent, setEditContent] = useState(content);
 
   // 체크박스 체크 시 onUpdate 호출
@@ -27,8 +29,8 @@ const TodoItem = ({
 
   // 수정 버튼 클릭 시 onEdit 호출
   const onClickEdit = () => {
-    if (isEditing && editContent.trim()) {
-      onEdit(id, editContent.trim());
+    if (isEditing && editTitle.trim() && editContent.trim()) {
+      onEdit(id, editTitle.trim(), editContent.trim());
     }
 
     setIsEditing(!isEditing);
@@ -45,15 +47,37 @@ const TodoItem = ({
           type="checkbox"
         />
       </div>
-      <div className={styles.title}>
+      <div className={styles.content}>
         {isEditing ? (
-          <input
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            autoFocus
-          />
+          <div className={styles.editInputs}>
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className={styles.editTitleInput}
+              autoFocus
+            />
+            <input
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className={styles.editContentInput}
+              autoFocus
+            />
+          </div>
         ) : (
-          content
+          <div className={styles.displayContent}>
+            <div
+              className={`${styles.title} ${isDone ? styles.completed : ""}`}
+            >
+              {title}
+            </div>
+            <div
+              className={`${styles.description} ${
+                isDone ? styles.completed : ""
+              }`}
+            >
+              {content}
+            </div>
+          </div>
         )}
       </div>
 

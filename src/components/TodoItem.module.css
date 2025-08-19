@@ -35,17 +35,61 @@
   line-height: 1;
 }
 
-.title {
+.content {
   flex: 1;
 }
 
-.title input {
+/* 편집 모드 입력창들 */
+.editInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editTitleInput,
+.editContentInput {
   width: 100%;
   border: none;
   border-bottom: 1px solid #ccc;
-  font-size: 16px;
   outline: none;
   background-color: transparent;
+  padding: 4px 0;
+}
+
+.editTitleInput {
+  font-size: 16px;
+  color: #333;
+}
+
+.editContentInput {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 표시 모드 콘텐츠 */
+.displayContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* todo 완료 */
+.completed {
+  text-decoration: line-through;
+  color: gray;
+  opacity: 0.7;
 }
 
 .date {

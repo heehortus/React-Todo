@@ -10,19 +10,22 @@ const mockTodo = [
   {
     id: 0,
     isDone: false,
-    content: "React 공부하기",
+    title: "REACT 공부",
+    content: "챕터 1 공부하기",
     createdDate: new Date().getTime(),
   },
   {
     id: 1,
     isDone: false,
-    content: "TIL 작성하기",
+    title: "TIL 작성",
+    content: "오늘치 TIL 작성하기",
     createdDate: new Date().getTime(),
   },
   {
     id: 2,
     isDone: false,
-    content: "React 복습하기",
+    title: "React 복습",
+    content: "챕터 3 복습하기",
     createdDate: new Date().getTime(),
   },
 ];
@@ -40,7 +43,9 @@ function reducer(state, action) {
 
     case "EDIT":
       return state.map((it) =>
-        it.id === action.targetId ? { ...it, content: action.newContent } : it
+        it.id === action.targetId
+          ? { ...it, title: action.newTitle, content: action.newContent }
+          : it
       );
 
     case "DELETE":
@@ -61,6 +66,7 @@ function App() {
   const [showToast, setShowToast] = useState(false);
 
   // useReducer로 변경
+  // JSON.parse(savedTodos): 믄지열을 객체로 바꾼다.
   const [todo, dispatch] = useReducer(reducer, null, () => {
     const savedTodos = localStorage.getItem("todos");
     return savedTodos ? JSON.parse(savedTodos) : mockTodo;
@@ -99,19 +105,21 @@ function App() {
   );
 
   // todo가 변경될 때마다 로컬 스토리지에 저장
+  // JSON.stringfy(todo): todo 객체를 문자열로 바꿈
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todo));
   }, [todo]);
 
   // 아이템 추가 함수
-  const onCreate = (content) => {
+  const onCreate = (title, content, selectedDate) => {
     dispatch({
       type: "CREATE",
       newItem: {
         id: idRef.current,
+        title,
         content,
         isDone: false,
-        createdDate: new Date().getTime(),
+        createdDate: selectedDate,
       },
     });
 
@@ -133,10 +141,11 @@ function App() {
   };
 
   // 아이템 수정 함수
-  const onEdit = (targetId, newContent) => {
+  const onEdit = (targetId, newTitle, newContent) => {
     dispatch({
       type: "EDIT",
       targetId,
+      newTitle,
       newContent,
     });
   };

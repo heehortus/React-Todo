@@ -1,7 +1,42 @@
+.dateInputWrapper {
+  flex: 1;
+  box-sizing: border-box;
+  border: 1px solid rgb(220, 220, 220);
+  border-radius: 5px;
+  padding: 15px;
+  background-color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dateInputWrapper:hover {
+  border: 1px solid #1f93ff;
+}
+
+.dateDisplay {
+  font-size: 14px;
+  color: #555;
+}
+
+.calendarIcon {
+  color: #555;
+  flex-shrink: 0;
+}
+
 .editWrapper {
   width: 100%;
   display: flex;
   gap: 10px;
+  padding-bottom: 20px;
+}
+
+.TodoEditor h5 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
 }
 
 .TodoEditor input {
@@ -17,9 +52,10 @@
   border: 1px solid #1f93ff;
 }
 
-.TodoEditor button {
+.submitButton {
   cursor: pointer;
-  width: 80px;
+  width: 100%;
+  padding: 10px;
   border: none;
   background-color: #1f93ff;
   /* 글자 색상 : white or #fff or #ffffff */
