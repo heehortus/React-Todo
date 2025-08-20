@@ -1,9 +1,20 @@
-import { useReducer, useState, useRef, useEffect } from "react";
+import React from "react";
+import {
+  useMemo,
+  useCallback,
+  useReducer,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
 import styles from "./App.module.css";
 import Header from "./components/Header";
 import TodoEditor from "./components/TodoEditor";
 import TodoList from "./components/TodoList";
 import Toast from "./components/Toast";
+
+export const TodoStateContext = React.createContext();
+export const TodoDispatchContext = React.createContext();
 
 // mock 데이터
 const mockTodo = [
@@ -57,11 +68,6 @@ function reducer(state, action) {
 }
 
 function App() {
-  // 컴포넌트 변수 idRef
-  // 아이템 생성할 때마다 idRef의 현재값 1씩 증가
-  // const idRef = useRef(3);
-  // const [todo, setTodo] = useState(mockTodo);
-
   // Toast 표시 상태
   const [showToast, setShowToast] = useState(false);
 
@@ -72,26 +78,8 @@ function App() {
     return savedTodos ? JSON.parse(savedTodos) : mockTodo;
   });
 
-  // 로컬 스토리지에서 데이터 불러오기
-  // const [todo, setTodo] = useState(() => {
-  //   const savedTodos = localStorage.getItem("todos");
-  //   return savedTodos ? JSON.parse(savedTodos) : [];
-  // });
-
-  // // 로컬 스토리지에서 마지막 ID 불러오기
-  // const idRef = useRef(
-  //   (() => {
-  //     const savedTodos = localStorage.getItem("todos");
-  //     if (savedTodos) {
-  //       const todos = JSON.parse(savedTodos);
-  //       return todos.length > 0
-  //         ? Math.max(...todos.map((todo) => todo.id)) + 1
-  //         : 0;
-  //     }
-  //     return 1;
-  //   })()
-  // );
-
+  // 컴포넌트 변수 idRef
+  // 아이템 생성할 때마다 idRef의 현재값 1씩 증가
   // localStorage 읽어서 나온 데이터의 최대 ID + 1
   const idRef = useRef(
     (() => {
@@ -133,12 +121,12 @@ function App() {
   };
 
   // 아이템 업데이트 함수 (체크박스 체크)
-  const onUpdate = (targetId) => {
+  const onUpdate = useCallback((targetId) => {
     dispatch({
       type: "UPDATE",
       targetId,
     });
-  };
+  }, []);
 
   // 아이템 수정 함수
   const onEdit = (targetId, newTitle, newContent) => {
@@ -152,23 +140,26 @@ function App() {
 
   // 아이템 삭제 함수
   // 해당 id를 가진 아이템 요소를 뺀 새 배열로 todo를 업데이트(필터)한다.
-  const onDelete = (targetId) => {
+  const onDelete = useCallback((targetId) => {
     dispatch({
       type: "DELETE",
       targetId,
     });
-  };
+  }, []);
+
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onUpdate, onEdit, onDelete };
+  }, []);
 
   return (
     <div className={styles.App}>
       <Header />
-      <TodoEditor onCreate={onCreate} />
-      <TodoList
-        todo={todo}
-        onUpdate={onUpdate}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
+      <TodoStateContext.Provider value={todo}>
+        <TodoDispatchContext.Provider value={memoizedDispatches}>
+          <TodoEditor />
+          <TodoList />
+        </TodoDispatchContext.Provider>
+      </TodoStateContext.Provider>
       <Toast
         message="할 일이 추가되었습니다!"
         isVisible={showToast}

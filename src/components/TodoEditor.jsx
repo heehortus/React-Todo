@@ -1,9 +1,11 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
+import { TodoDispatchContext } from "../App";
 import { Plus, Calendar as CalendarIcon } from "lucide-react";
 import Calendar from "../components/Calendar";
 import styles from "./TodoEditor.module.css";
 
-const TodoEditor = ({ onCreate }) => {
+const TodoEditor = () => {
+  const { onCreate } = useContext(TodoDispatchContext);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());

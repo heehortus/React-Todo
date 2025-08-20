@@ -1,3 +1,5 @@
+import React from "react";
+import { BookOpen } from "lucide-react";
 import styles from "./Header.module.css";
 
 function KoreanDate() {
@@ -14,10 +16,14 @@ function KoreanDate() {
 const Header = () => {
   return (
     <div className={styles.Header}>
-      <h3>오늘의 날짜는</h3>
-      <h1>{KoreanDate()}</h1>
+      <h3>MY TODO LIST</h3>
+      <BookOpen
+        size={40} // 크기
+        color="#1f93ff" // 색상
+        strokeWidth={2} // 선 두께
+      />
     </div>
   );
 };
 
-export default Header;
+export default React.memo(Header);

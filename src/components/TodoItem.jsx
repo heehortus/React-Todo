@@ -1,18 +1,12 @@
-import { useState } from "react";
+import React from "react";
+import { useContext, useState } from "react";
+import { TodoDispatchContext } from "../App";
 // 아이콘
 import { Edit, Check, Trash2 } from "lucide-react";
 import styles from "./TodoItem.module.css";
 
-const TodoItem = ({
-  id,
-  title,
-  content,
-  isDone,
-  createdDate,
-  onUpdate,
-  onEdit,
-  onDelete,
-}) => {
+const TodoItem = ({ id, title, content, isDone, createdDate }) => {
+  const { onUpdate, onEdit, onDelete } = useContext(TodoDispatchContext);
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
   const [editContent, setEditContent] = useState(content);
@@ -60,7 +54,6 @@ const TodoItem = ({
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               className={styles.editContentInput}
-              autoFocus
             />
           </div>
         ) : (
@@ -100,4 +93,4 @@ const TodoItem = ({
   );
 };
 
-export default TodoItem;
+export default React.memo(TodoItem);

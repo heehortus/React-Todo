@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useContext, useMemo, useState } from "react";
+import { TodoStateContext } from "../App";
 import TodoItem from "./TodoItem";
 import { Filter } from "lucide-react";
 import styles from "./TodoList.module.css";
 
-const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
+const TodoList = () => {
+  const todo = useContext(TodoStateContext);
+
   const [search, setSearch] = useState("");
 
   // 정렬 및 필터
@@ -15,11 +18,17 @@ const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
     setSearch(e.target.value);
   };
 
+  // 정렬 기준 변경할 경우 화면에 반영하는 함수
+  const onChangeSort = (value) => {
+    setSort(value);
+    setShowFilter(false);
+  };
+
   // 입력 검색어에 따라 아이템 필터링 함수
   // 검색어가 비었으면 todo 그대로 출력
   // 검색어가 있으면 todo filter
   // 대소문자 구별 안 가도록 (대문자 -> 소문자 변환)
-  const getSearchResult = () => {
+  const searchResult = useMemo(() => {
     return search === ""
       ? todo
       : todo.filter(
@@ -27,41 +36,40 @@ const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
             it.title.toLowerCase().includes(search.toLowerCase()) ||
             it.content.toLowerCase().includes(search.toLowerCase())
         );
-  };
-
-  // 정렬 기준 변경할 경우 화면에 반영하는 함수
-  const onChangeSort = (value) => {
-    setSort(value);
-    setShowFilter(false);
-  };
+  }, [todo, search]);
 
   // 정렬 함수
-  const getSortedResult = () => {
-    const searchedTodos = getSearchResult();
-
+  const sortResult = useMemo(() => {
+    const searchedTodos = searchResult;
     switch (sort) {
+      // 최신순
       case "date":
-        // 최신순
         return searchedTodos.sort((a, b) => b.createdDate - a.createdDate);
 
+      // 제목 가나다순
       case "title":
-        // 제목 가나다순
-        return searchedTodos.sort((a, b) => a.title.localeCompare(b.title));
+        return searchedTodos.sort((a, b) =>
+          a.title.localeCompare(b.title, ["ko-KR", "en-US"], {
+            numeric: true,
+            sensitivity: "base",
+            caseFirst: "lower",
+          })
+        );
 
+      // 완료된 것 먼저
       case "completed":
-        // 완료된 것 먼저
         return searchedTodos.sort((a, b) => b.isDone - a.isDone);
 
+      // 미완료된 것 먼저
       case "incomplete":
-        // 미완료된 것 먼저
         return searchedTodos.sort((a, b) => a.isDone - b.isDone);
 
       default:
         return searchedTodos;
     }
-  };
+  }, [searchResult, sort]);
 
-  const getSortLabel = () => {
+  const sortLabel = useMemo(() => {
     switch (sort) {
       case "date":
         return "최신순";
@@ -74,13 +82,28 @@ const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
       default:
         return "최신순";
     }
-  };
+  }, [sort]);
+
+  // To do 분석 함수
+  const analyzeTodo = useMemo(() => {
+    const totalCount = todo.length;
+    const doneCount = todo.filter((it) => it.isDone).length;
+    const notDoneCount = totalCount - doneCount;
+
+    return {
+      totalCount,
+      doneCount,
+      notDoneCount,
+    };
+  }, [todo]); //todo가 변할 때 콜백 함수 재실행
+
+  // 함수 호출하여 반환값을 받음
+  const { totalCount, doneCount, notDoneCount } = analyzeTodo;
 
   return (
     <div className={styles.TodoList}>
       <div className={styles.header}>
         <h3>To Do List</h3>
-
         <input
           id="searchInput"
           name="search"
@@ -89,14 +112,13 @@ const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
           className={styles.searchBar}
           placeholder="무엇을 찾고 계신가요?"
         />
-
         <div className={styles.filterWrapper}>
           <button
             className={styles.filterButton}
             onClick={() => setShowFilter(!showFilter)}
           >
             <Filter size={16} />
-            {getSortLabel()}
+            {sortLabel}
           </button>
 
           {showFilter && (
@@ -128,24 +150,24 @@ const TodoList = ({ todo, onUpdate, onEdit, onDelete }) => {
             </div>
           )}
         </div>
+        <div className={styles.analyzeWrapper}>
+          <div>모든 Todo: {totalCount}</div>
+          <div>완료한 Todo: {doneCount}</div>
+          <div>아직 완료하지 않은 Todo: {notDoneCount}</div>
+        </div>
       </div>
 
       <div className={styles.listWrapper}>
-        {getSortedResult().map((it) => {
-          return (
-            <TodoItem
-              key={it.id}
-              {...it}
-              title={it.title}
-              onUpdate={onUpdate}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          );
-        })}
+        {sortResult.map((it) => (
+          <TodoItem key={it.id} {...it} />
+        ))}
       </div>
     </div>
   );
+};
+
+TodoList.defaultProps = {
+  todo: [],
 };
 
 export default TodoList;
