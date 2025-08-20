@@ -70,33 +70,39 @@ function reducer(state, action) {
 function App() {
   // Toast 표시 상태
   const [showToast, setShowToast] = useState(false);
+  const toastTimeoutRef = useRef(null);
 
-  // useReducer로 변경
-  // JSON.parse(savedTodos): 믄지열을 객체로 바꾼다.
-  const [todo, dispatch] = useReducer(reducer, null, () => {
+  // mockData 받기
+  const getmockData = () => {
     const savedTodos = localStorage.getItem("todos");
     return savedTodos ? JSON.parse(savedTodos) : mockTodo;
-  });
+  };
+
+  // useReducer로 변경
+  const [todo, dispatch] = useReducer(reducer, null, getmockData);
 
   // 컴포넌트 변수 idRef
   // 아이템 생성할 때마다 idRef의 현재값 1씩 증가
   // localStorage 읽어서 나온 데이터의 최대 ID + 1
-  const idRef = useRef(
-    (() => {
-      const savedTodos = localStorage.getItem("todos");
-      const currentTodos = savedTodos ? JSON.parse(savedTodos) : mockTodo;
-
-      return currentTodos.length > 0
-        ? Math.max(...currentTodos.map((it) => it.id)) + 1
-        : 0;
-    })()
-  );
+  const idRef = useRef(() => {
+    const mockData = getmockData();
+    mockData.length > 0 ? Math.max(...mockData.map((it) => it.id)) + 1 : 0;
+  });
 
   // todo가 변경될 때마다 로컬 스토리지에 저장
   // JSON.stringfy(todo): todo 객체를 문자열로 바꿈
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todo));
   }, [todo]);
+
+  // cleanup useEffect 추가
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // 아이템 추가 함수
   const onCreate = (title, content, selectedDate) => {
@@ -112,6 +118,11 @@ function App() {
     });
 
     idRef.current += 1;
+
+    // setTimeout cleanup
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
 
     // toast 알림 로직: 2초 후 사라진다.
     setShowToast(true);
@@ -147,6 +158,10 @@ function App() {
     });
   }, []);
 
+   const onToastClose = useCallback(() => {
+    setShowToast(false);
+  }, []);
+
   const memoizedDispatches = useMemo(() => {
     return { onCreate, onUpdate, onEdit, onDelete };
   }, []);
@@ -163,7 +178,7 @@ function App() {
       <Toast
         message="할 일이 추가되었습니다!"
         isVisible={showToast}
-        onClose={() => setShowToast(false)}
+        onClose={onToastClose}
       />
     </div>
   );

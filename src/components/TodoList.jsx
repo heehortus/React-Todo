@@ -40,15 +40,19 @@ const TodoList = () => {
 
   // 정렬 함수
   const sortResult = useMemo(() => {
-    const searchedTodos = searchResult;
     switch (sort) {
       // 최신순
       case "date":
-        return searchedTodos.sort((a, b) => b.createdDate - a.createdDate);
+        return [...searchResult].sort((a, b) => {
+          if (a.isDone !== b.isDone) {
+            return a.isDone - b.isDone;
+          }
+          return b.createdDate - a.createdDate;
+        });
 
       // 제목 가나다순
       case "title":
-        return searchedTodos.sort((a, b) =>
+        return [...searchResult].sort((a, b) =>
           a.title.localeCompare(b.title, ["ko-KR", "en-US"], {
             numeric: true,
             sensitivity: "base",
@@ -58,18 +62,18 @@ const TodoList = () => {
 
       // 완료된 것 먼저
       case "completed":
-        return searchedTodos.sort((a, b) => b.isDone - a.isDone);
+        return [...searchResult].sort((a, b) => b.isDone - a.isDone);
 
       // 미완료된 것 먼저
       case "incomplete":
-        return searchedTodos.sort((a, b) => a.isDone - b.isDone);
+        return [...searchResult].sort((a, b) => a.isDone - b.isDone);
 
       default:
-        return searchedTodos;
+        return searchResult;
     }
   }, [searchResult, sort]);
 
-  const sortLabel = useMemo(() => {
+  const getSortLabel = () => {
     switch (sort) {
       case "date":
         return "최신순";
@@ -82,7 +86,7 @@ const TodoList = () => {
       default:
         return "최신순";
     }
-  }, [sort]);
+  };
 
   // To do 분석 함수
   const analyzeTodo = useMemo(() => {
@@ -118,7 +122,7 @@ const TodoList = () => {
             onClick={() => setShowFilter(!showFilter)}
           >
             <Filter size={16} />
-            {sortLabel}
+            {getSortLabel()}
           </button>
 
           {showFilter && (
@@ -164,10 +168,6 @@ const TodoList = () => {
       </div>
     </div>
   );
-};
-
-TodoList.defaultProps = {
-  todo: [],
 };
 
 export default TodoList;
