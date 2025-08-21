@@ -98,6 +98,11 @@
   color: gray;
 }
 
+.time {
+  font-size: 16px;
+  color: gray;
+}
+
 .btn {
   display: flex;
   gap: 4px;

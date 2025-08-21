@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  useMemo,
-  useCallback,
-  useReducer,
-  useState,
-  useRef,
-  useEffect,
-} from "react";
+import { useMemo, useCallback, useReducer, useRef, useEffect } from "react";
 import styles from "./App.module.css";
 import Header from "./components/Header";
 import TodoEditor from "./components/TodoEditor";
@@ -42,7 +35,7 @@ const mockTodo = [
 ];
 
 // useReducer를 사용하기 위한 reducer 함수
-function reducer(state, action) {
+function todoReducer(state, action) {
   switch (action.type) {
     case "CREATE":
       return [action.newItem, ...state];
@@ -55,7 +48,11 @@ function reducer(state, action) {
     case "EDIT":
       return state.map((it) =>
         it.id === action.targetId
-          ? { ...it, title: action.newTitle, content: action.newContent }
+          ? {
+              ...it,
+              title: action.newTitle,
+              content: action.newContent,
+            }
           : it
       );
 
@@ -67,27 +64,37 @@ function reducer(state, action) {
   }
 }
 
+function toastReducer(state, action) {
+  switch (action.type) {
+    case "SHOW":
+      return true;
+    case "HIDE":
+      return false;
+    default:
+      return state;
+  }
+}
+
 function App() {
-  // Toast 표시 상태
-  const [showToast, setShowToast] = useState(false);
+  // Toast 표시 상태 useState -> useReducer로 변경
+  const [showToast, toastDispatch] = useReducer(toastReducer, false);
   const toastTimeoutRef = useRef(null);
 
-  // mockData 받기
-  const getmockData = () => {
+  // useReducer로 변경
+  const [todo, todoDispatch] = useReducer(todoReducer, null, () => {
     const savedTodos = localStorage.getItem("todos");
     return savedTodos ? JSON.parse(savedTodos) : mockTodo;
-  };
-
-  // useReducer로 변경
-  const [todo, dispatch] = useReducer(reducer, null, getmockData);
-
-  // 컴포넌트 변수 idRef
-  // 아이템 생성할 때마다 idRef의 현재값 1씩 증가
-  // localStorage 읽어서 나온 데이터의 최대 ID + 1
-  const idRef = useRef(() => {
-    const mockData = getmockData();
-    mockData.length > 0 ? Math.max(...mockData.map((it) => it.id)) + 1 : 0;
   });
+
+  const idRef = useRef(3);
+
+  // // 컴포넌트 변수 idRef
+  // // 아이템 생성할 때마다 idRef의 현재값 1씩 증가
+  // // localStorage 읽어서 나온 데이터의 최대 ID + 1
+  // const idRef = useRef(() => {
+  //   const mockData = getmockData();
+  //   mockData.length > 0 ? Math.max(...mockData.map((it) => it.id)) + 1 : 0;
+  // });
 
   // todo가 변경될 때마다 로컬 스토리지에 저장
   // JSON.stringfy(todo): todo 객체를 문자열로 바꿈
@@ -95,7 +102,7 @@ function App() {
     localStorage.setItem("todos", JSON.stringify(todo));
   }, [todo]);
 
-  // cleanup useEffect 추가
+  // toast setTime cleanup useEffect 추가
   useEffect(() => {
     return () => {
       if (toastTimeoutRef.current) {
@@ -105,8 +112,8 @@ function App() {
   }, []);
 
   // 아이템 추가 함수
-  const onCreate = (title, content, selectedDate) => {
-    dispatch({
+  const onCreate = useCallback((title, content, selectedDate) => {
+    todoDispatch({
       type: "CREATE",
       newItem: {
         id: idRef.current,
@@ -125,41 +132,41 @@ function App() {
     }
 
     // toast 알림 로직: 2초 후 사라진다.
-    setShowToast(true);
+    toastDispatch({ type: "SHOW" });
     setTimeout(() => {
-      setShowToast(false);
+      toastDispatch({ type: "HIDE" });
     }, 2000);
-  };
+  }, []);
 
   // 아이템 업데이트 함수 (체크박스 체크)
   const onUpdate = useCallback((targetId) => {
-    dispatch({
+    todoDispatch({
       type: "UPDATE",
       targetId,
     });
   }, []);
 
   // 아이템 수정 함수
-  const onEdit = (targetId, newTitle, newContent) => {
-    dispatch({
+  const onEdit = useCallback((targetId, newTitle, newContent) => {
+    todoDispatch({
       type: "EDIT",
       targetId,
       newTitle,
       newContent,
     });
-  };
+  }, []);
 
   // 아이템 삭제 함수
   // 해당 id를 가진 아이템 요소를 뺀 새 배열로 todo를 업데이트(필터)한다.
   const onDelete = useCallback((targetId) => {
-    dispatch({
+    todoDispatch({
       type: "DELETE",
       targetId,
     });
   }, []);
 
-   const onToastClose = useCallback(() => {
-    setShowToast(false);
+  const onToastClose = useCallback(() => {
+    todoDispatch({ type: "HIDE" });
   }, []);
 
   const memoizedDispatches = useMemo(() => {
